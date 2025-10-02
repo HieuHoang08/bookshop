@@ -71,7 +71,11 @@ public class AuthorService {
     // Find by ID
     public Author findAuthorById(Long id) {
         Optional<Author> authorOptional = this.authorRepository.findById(id);
-        return authorOptional.orElse(null);
+        if (authorOptional.isPresent()) {
+
+            return authorOptional.get();
+        }
+        return null;
     }
 
 // Delete

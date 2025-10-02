@@ -1,4 +1,5 @@
-package com.hh.Job.domain.response.author;
+package com.hh.Job.domain.response.publisher;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +10,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResAuthorDTO {
+public class ResPublisherDTO {
+
     private Long id;
     private String name;
-    private String date;
-    private String description;
-}
+    private String address;
+    private String email;
+    private String phone;
 
+}
