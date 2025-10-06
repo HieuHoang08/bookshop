@@ -18,6 +18,8 @@ import java.util.List;
 @Table(name = "books",uniqueConstraints = {
         @UniqueConstraint(columnNames = "isbn")
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
 @Getter
 @Setter
 public class Book {
@@ -84,6 +86,9 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<Category> categories;
 
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnoreProperties(value = {"book"})
+    private List<Cart> carts;
 
     @PrePersist
     public void handleBeforeCreate () {

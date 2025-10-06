@@ -2,6 +2,7 @@ package com.hh.Job.domain;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hh.Job.util.SecurityUtil;
 import com.hh.Job.domain.constant.GenderEnum;
 import jakarta.persistence.*;
@@ -11,9 +12,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 public class User {
@@ -46,6 +49,10 @@ public class User {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnoreProperties(value = "user")
+    private List<Cart> carts;
 
     @PrePersist
     public void handleCreatedAt() {

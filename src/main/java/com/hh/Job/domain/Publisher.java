@@ -1,6 +1,7 @@
 package com.hh.Job.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "publishers")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 public class Publisher {

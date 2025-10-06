@@ -10,6 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "categories")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Setter
 @Getter
 public class Category {

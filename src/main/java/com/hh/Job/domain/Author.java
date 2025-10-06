@@ -13,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "authors")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 public class Author {
