@@ -29,7 +29,6 @@ public class UserService {
     }
 
     public User handleCreateUser(User user) {
-        // check company
 
         return this.userRepository.save(user);
     }
@@ -110,6 +109,7 @@ public class UserService {
                         item.getGender(),
                         item.getAddress(),
                         item.getAge(),
+                        item.getPhone(),
                         item.getCreatedAt(),
                         item.getUpdatedAt()
                 ))
@@ -130,6 +130,8 @@ public class UserService {
         res.setEmail(user.getEmail());
         res.setName(user.getName());
         res.setAge(user.getAge());
+        res.setAddress(user.getAddress());
+        res.setPhone(user.getPhone());
         res.setGender(user.getGender());
         res.setCreatedAt(user.getCreatedAt());
         res.setAddress(user.getAddress());
@@ -143,6 +145,8 @@ public class UserService {
         res.setEmail(user.getEmail());
         res.setName(user.getName());
         res.setAge(user.getAge());
+        res.setAddress(user.getAddress());
+        res.setPhone(user.getPhone());
         res.setGender(user.getGender());
         res.setCreatedAt(user.getCreatedAt());
         res.setAddress(user.getAddress());
@@ -158,6 +162,7 @@ public class UserService {
         res.setId(user.getId());
         res.setName(user.getName());         // ✅ sửa lại cho khớp DTO
         res.setAddress(user.getAddress());
+        res.setPhone(user.getPhone());
         res.setAge(user.getAge());
         res.setGender(user.getGender());
         res.setUpdatedAt(user.getUpdatedAt());

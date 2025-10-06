@@ -34,7 +34,8 @@ public class PublisherController {
 
     @PutMapping("/publishers/{id}")
     @APImessage("update a publisher")
-    public ResponseEntity<Publisher> updatePublisher(@RequestBody Publisher publisher, @PathVariable("id") Long id) throws IdInvalidException {
+    public ResponseEntity<Publisher> updatePublisher(@RequestBody Publisher publisher, @PathVariable("id") Long id)
+            throws IdInvalidException {
         publisher.setId(id);
         Publisher updatedPublisher = publisherService.updatePublisher(publisher);
         if(updatedPublisher == null) {
@@ -45,7 +46,8 @@ public class PublisherController {
 
     @GetMapping("publishers/{id}")
     @APImessage("fetch publisher by ID")
-    public ResponseEntity<Publisher> fetchPublisher(@PathVariable("id") Long id) throws IdInvalidException {
+    public ResponseEntity<Publisher> fetchPublisher(@PathVariable("id") Long id)
+            throws IdInvalidException {
         Publisher pub = publisherService.fetchPublisherById(id);
         if(pub == null) {
             throw new IdInvalidException("publisher voi id" + id + " not found");
@@ -55,7 +57,8 @@ public class PublisherController {
 
     @DeleteMapping("/publishers/{id}")
     @APImessage("Delete an publisher")
-    public ResponseEntity<Object> deletePublisher(@PathVariable("id") Long id) throws IdInvalidException {
+    public ResponseEntity<Object> deletePublisher(@PathVariable("id") Long id)
+            throws IdInvalidException {
         Publisher publisher = publisherService.fetchPublisherById(id);
         if(publisher == null) {
             throw new IdInvalidException("publisher voi id" + id + " not found");

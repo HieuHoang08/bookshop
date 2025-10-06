@@ -31,11 +31,12 @@ public class AuthorController {
     // Update
     @PutMapping("/authors/{id}")
     @APImessage("Update an author")
-    public ResponseEntity<Author> updateAuthor(@PathVariable("id") Long id, @RequestBody Author author) {
+    public ResponseEntity<Author> updateAuthor(@PathVariable("id") Long id, @RequestBody Author author)
+    throws IdInvalidException {
         author.setId(id); // gán id từ path vào object
         Author updated = authorService.updateAuthor(author);
         if (updated == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw  new IdInvalidException("Author voi id" + id + " not found");
         }
         return ResponseEntity.ok(updated);
     }

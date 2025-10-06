@@ -1,9 +1,12 @@
 package com.hh.Job.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "categories")
@@ -18,4 +21,8 @@ public class Category {
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
+
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = {"authors", "publisher", "categories"})
+    private List<Book> books;
 }

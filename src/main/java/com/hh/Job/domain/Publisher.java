@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "publishers")
 @Getter
@@ -24,4 +26,6 @@ public class Publisher {
 
     private String email;
 
+    @OneToMany(mappedBy = "publisher", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Book> books;
 }

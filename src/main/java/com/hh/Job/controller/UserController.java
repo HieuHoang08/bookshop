@@ -40,8 +40,7 @@ public class UserController {
         boolean isEmailExit = this.userService.isEmailExists(user.getEmail());
         if (isEmailExit) {
             throw new IdInvalidException(
-                    "Email" + user.getEmail() + " da ton tai, vui long xu dung email khac"
-            );
+                    "Email" + user.getEmail() + " da ton tai, vui long xu dung email khac");
         }
 
         String hashedPassword = passwordEncoder.encode(user.getPassword());
@@ -56,19 +55,18 @@ public class UserController {
     @APImessage("Delete a user")
     public ResponseEntity<Object> deleteUser( @PathVariable("id") Long id)
             throws IdInvalidException {
-
         User crrentUser = this.userService.fetchUserById(id);
         if(crrentUser == null) {
             throw new IdInvalidException("User voi id " + id + " khong ton tai ");
         }
-
         this.userService.handleDeleteUser(id);
         return ResponseEntity.status(HttpStatus.OK).body("null");
     }
 
     @GetMapping("/users/{id}")
     @APImessage("fetch user by id")
-    public ResponseEntity<ResUserDTO> getUserById(@PathVariable("id") Long id) throws IdInvalidException {
+    public ResponseEntity<ResUserDTO> getUserById(@PathVariable("id") Long id)
+            throws IdInvalidException {
         User fetch = this.userService.fetchUserById(id);
         if(fetch == null) {
             throw new IdInvalidException("User  voi id = "  + id + "khong ton tai" );

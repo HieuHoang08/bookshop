@@ -6,6 +6,7 @@ import com.hh.Job.util.SecurityUtil;
 import com.hh.Job.domain.constant.GenderEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,6 +27,10 @@ public class User {
     private String password;
     @NotBlank(message = "email khong duoc de trong")
     private String email;
+
+    @Pattern(regexp="^(\\+84|0)[0-9]{9,10}$", message="Số điện thoại không hợp lệ")
+    private String phone;
+
 
     private int age;
 

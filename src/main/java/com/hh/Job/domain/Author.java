@@ -1,6 +1,7 @@
 package com.hh.Job.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hh.Job.util.SecurityUtil;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "authors")
@@ -32,6 +34,10 @@ public class Author {
 
     private String createdBy;
     private String updatedBy;
+
+    @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = {"authors", "publisher", "categories"})
+    private List<Book> books;
 
     @PrePersist
     public void handleBeforeCreate () {
