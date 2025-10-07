@@ -110,26 +110,26 @@ public class CartService {
         return res;
     }
 
-        public ResultPaginationDTO fetchAllCart(Specification<Cart> spec, Pageable pageable) {
-            Page<Cart> pageCart = this.cartRepository.findAll(spec, pageable);
-            ResultPaginationDTO res = new ResultPaginationDTO();
-            ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+    public ResultPaginationDTO fetchAllCart(Specification<Cart> spec, Pageable pageable) {
+        Page<Cart> pageCart = this.cartRepository.findAll(spec, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
 
-            meta.setPage(pageable.getPageNumber() + 1);
-            meta.setPageSize(pageable.getPageSize());
-            meta.setTotal(pageCart.getTotalElements());
-            meta.setPages(pageCart.getTotalPages());
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setTotal(pageCart.getTotalElements());
+        meta.setPages(pageCart.getTotalPages());
 
-            res.setMeta(meta);
-            res.setResult(pageCart.getContent());
-            return res;
-        }
+        res.setMeta(meta);
+        res.setResult(pageCart.getContent());
+        return res;
+    }
 
-        public void handleDeteleCart(Long id) {
+    public void handleDeteleCart(Long id) {
         Optional<Cart> optionalCart = this.cartRepository.findById(id);
         if (optionalCart.isPresent()) {
             Cart cart = optionalCart.get();
             cartRepository.delete(cart);
             }
-        }
+    }
 }

@@ -4,11 +4,14 @@ package com.hh.Job.domain.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
-public class ResultPaginationDTO {
+public class ResultPaginationDTO<T> {
     private Meta meta;
-    private Object result;
+//    private Object result;
+    private List<T> result;
 
     @Getter
     @Setter
