@@ -5,6 +5,7 @@ import com.hh.Job.domain.response.user.ResCreateUserDTO;
 import com.hh.Job.domain.response.user.ResUpdateUserDTO;
 import com.hh.Job.domain.response.user.ResUserDTO;
 import com.hh.Job.domain.response.ResultPaginationDTO;
+import com.hh.Job.domain.response.user.UserDTO;
 import com.hh.Job.service.UserService;
 import com.hh.Job.util.annotation.APImessage;
 import com.hh.Job.util.error.IdInvalidException;
@@ -65,13 +66,10 @@ public class UserController {
 
     @GetMapping("/users/{id}")
     @APImessage("fetch user by id")
-    public ResponseEntity<ResUserDTO> getUserById(@PathVariable("id") Long id)
-            throws IdInvalidException {
-        User fetch = this.userService.fetchUserById(id);
-        if(fetch == null) {
-            throw new IdInvalidException("User  voi id = "  + id + "khong ton tai" );
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(this.userService.convertToRestUserDTO(fetch));
+
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        UserDTO userDTO = userService.getUserDTOById(id);
+        return ResponseEntity.ok(userDTO);
     }
 
     @PutMapping("/users")

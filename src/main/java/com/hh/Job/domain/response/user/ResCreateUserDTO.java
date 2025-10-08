@@ -1,5 +1,6 @@
 package com.hh.Job.domain.response.user;
 
+import com.hh.Job.domain.Address;
 import com.hh.Job.domain.constant.GenderEnum;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +14,7 @@ public class ResCreateUserDTO {
     private long id;
     private String name;
     private String email;
-    private String address;
+    private Address address;
     private GenderEnum gender;
     private int age;
     private String phone;

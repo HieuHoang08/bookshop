@@ -1,12 +1,16 @@
 package com.hh.Job.service;
 
 
+import com.hh.Job.domain.Address;
 import com.hh.Job.domain.User;
 import com.hh.Job.domain.response.user.ResCreateUserDTO;
 import com.hh.Job.domain.response.user.ResUpdateUserDTO;
 import com.hh.Job.domain.response.user.ResUserDTO;
 import com.hh.Job.domain.response.ResultPaginationDTO;
+import com.hh.Job.domain.response.user.UserDTO;
+import com.hh.Job.repository.AddressRepository;
 import com.hh.Job.repository.UserRepository;
+import com.hh.Job.util.error.IdInvalidException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,23 +25,62 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
 
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, AddressRepository addressRepository) {
 
         this.userRepository = userRepository;
+
+        this.addressRepository = addressRepository;
     }
 
     public User handleCreateUser(User user) {
+        Address address = user.getAddress();
 
-        return this.userRepository.save(user);
+        if (address != null && address.getId() == null) {
+            // Lưu địa chỉ trước nếu là mới
+            address = addressRepository.save(address);
+            user.setAddress(address);
+        }
+
+        return userRepository.save(user);
     }
+
 
     public void handleDeleteUser(Long id) {
 
         this.userRepository.deleteById(id);
     }
 
+    public UserDTO getUserDTOById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + id));
+
+        // Tạo DTO
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setPhone(user.getPhone());
+        dto.setAge(user.getAge());
+
+        // Nếu user có address thì gán dữ liệu
+        if (user.getAddress() != null) {
+            dto.setStreet(user.getAddress().getStreet());
+            dto.setWard(user.getAddress().getWard());
+            dto.setCity(user.getAddress().getCity());
+            dto.setCountry(user.getAddress().getCountry());
+            dto.setPostalCode(user.getAddress().getPostalCode());
+        }
+
+        return dto;
+    }
+
+//    public List<User> fetchAllUsers(Pageable pageable) {
+//        Page<User> pageUser = this.userRepository.findAll(pageable);
+//        return pageUser.getContent();
+//    }
     public User fetchUserById(Long id) {
         Optional<User> user = this.userRepository.findById(id);
         if (user.isPresent()) {
@@ -47,10 +90,6 @@ public class UserService {
         return null;
     }
 
-//    public List<User> fetchAllUsers(Pageable pageable) {
-//        Page<User> pageUser = this.userRepository.findAll(pageable);
-//        return pageUser.getContent();
-//    }
 
     public User handleUpdateUser(User user) {
         User crrUser = this.fetchUserById(user.getId());
@@ -134,7 +173,6 @@ public class UserService {
         res.setPhone(user.getPhone());
         res.setGender(user.getGender());
         res.setCreatedAt(user.getCreatedAt());
-        res.setAddress(user.getAddress());
         return res;
     }
 
@@ -149,7 +187,6 @@ public class UserService {
         res.setPhone(user.getPhone());
         res.setGender(user.getGender());
         res.setCreatedAt(user.getCreatedAt());
-        res.setAddress(user.getAddress());
         res.setUpdatedAt(user.getUpdatedAt());
 
         return res;

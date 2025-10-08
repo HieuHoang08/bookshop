@@ -39,7 +39,11 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
-    private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    @JsonIgnoreProperties({"users", "hibernateLazyInitializer", "handler"})
+    private Address address;
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;

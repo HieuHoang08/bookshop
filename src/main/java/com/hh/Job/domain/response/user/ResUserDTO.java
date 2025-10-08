@@ -1,5 +1,6 @@
 package com.hh.Job.domain.response.user;
 
+import com.hh.Job.domain.Address;
 import com.hh.Job.domain.constant.GenderEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,7 @@ public class ResUserDTO {
     private String name;
     private String email;
     private GenderEnum gender;
-    private String address;
+    private Address address;
     private int age;
     private String phone;
     private Instant createdAt;
