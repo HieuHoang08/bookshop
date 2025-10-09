@@ -87,6 +87,7 @@ public class BookService {
     }
 
     public Optional<Book> fetchBookById(Long id) {
+
         return  bookRepository.findById(id);
     }
 

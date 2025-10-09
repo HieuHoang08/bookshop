@@ -6,6 +6,7 @@ import com.hh.Job.domain.constant.CartType;
 import com.hh.Job.domain.constant.OrderStatus;
 import com.hh.Job.util.SecurityUtil;
 import jakarta.persistence.*;
+import jakarta.transaction.Transaction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -51,6 +52,10 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("order")
     private List<OrderDetail> orderDetails; // khởi tạo sẵn
+
+    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("order")
+    private List<BorrowTransaction> borrowTransactions;
 
     @PrePersist
     public void handleBeforeCreate () {

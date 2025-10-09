@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.hh.Job.domain.constant.CartType;
+
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
@@ -50,6 +52,9 @@ public class BorrowTransaction {
 
     private String updatedBy;
 
+    @Transient
+    private Double totalToPay;
+
     @PrePersist
     public void handleBeforeCreate() {
         this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent()
@@ -62,6 +67,7 @@ public class BorrowTransaction {
 
         // Tính tiền phạt khi tạo (nếu returnDate > dueDate)
         this.calculateFine();
+        this.calculateTotalToPay();
     }
 
     @PreUpdate
@@ -73,19 +79,42 @@ public class BorrowTransaction {
 
         // Cập nhật tiền phạt khi returnDate thay đổi
         this.calculateFine();
+        this.calculateTotalToPay();
     }
 
-    private void calculateFine() {
-        if (this.returnDate != null && this.dueDate != null && this.returnDate.isAfter(this.dueDate)) {
-            long daysLate = Duration.between(this.dueDate.atStartOfDay(), this.returnDate.atStartOfDay()).toDays();
-            if (daysLate > 0) {
-                this.fine = FINE_PER_DAY.multiply(BigInteger.valueOf(daysLate));
+    public void calculateFine() {
+        if (this.order != null && this.order.getOrderType() == CartType.BORROW) {
+            if (this.returnDate != null && this.dueDate != null && this.returnDate.isAfter(this.dueDate)) {
+                long daysLate = Duration.between(
+                        this.dueDate.atStartOfDay(),
+                        this.returnDate.atStartOfDay()
+                ).toDays();
+
+                this.fine = (daysLate > 0)
+                        ? FINE_PER_DAY.multiply(BigInteger.valueOf(daysLate))
+                        : BigInteger.ZERO;
             } else {
                 this.fine = BigInteger.ZERO;
             }
         } else {
+            // Nếu không phải đơn BORROW thì không có tiền phạt
             this.fine = BigInteger.ZERO;
         }
     }
 
+    public void calculateTotalToPay() {
+        double fineValue = (this.fine != null) ? this.fine.doubleValue() : 0.0;
+        double orderPrice = 0.0;
+
+        try {
+            if (this.order != null && this.order.getTotalPrice() != null) {
+                orderPrice = this.order.getTotalPrice();
+            }
+        } catch (Exception e) {
+            // Nếu order là proxy lazy chưa được init, tránh ném exception trong lifecycle hook.
+            orderPrice = 0.0;
+        }
+
+        this.totalToPay = orderPrice + fineValue;
+    }
 }
