@@ -4,6 +4,7 @@ package com.hh.Job.domain.response.borrow;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 
 @Getter
@@ -13,5 +14,6 @@ public class BorrowOrderDTO {
     private LocalDate borrowDate;
     private LocalDate dueDate;
     private LocalDate returnDate;
+    private BigInteger deposit;
 
 }

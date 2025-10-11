@@ -1,6 +1,7 @@
 package com.hh.Job.domain.response.borrow;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.hh.Job.domain.constant.BorrowStatus;
 import com.hh.Job.domain.constant.CartType;
 import com.hh.Job.domain.constant.OrderStatus;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,10 @@ public class ResBorrowDTO {
     private LocalDate returnDate;
 
     private BigInteger fine;
-
+    private BorrowStatus borrowStatus;
+    private BigInteger deposit;          // Tiền đặt cọc
+    private BigInteger refundAmount;     // Tiền được hoàn lại
+    private Boolean depositRefunded;     // Đã hoàn cọc chưa
 //     Thông tin đơn hàng liên kết
     private Long orderId;
     private OrderStatus orderStatus;

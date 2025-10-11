@@ -2,6 +2,7 @@ package com.hh.Job.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.hh.Job.domain.constant.BorrowStatus;
 import com.hh.Job.util.SecurityUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -41,6 +42,21 @@ public class BorrowTransaction {
 
     @Column(columnDefinition = "BIGINT DEFAULT 0")
     private BigInteger fine = BigInteger.ZERO;
+
+    // 💰 Tiền đặt cọc khi mượn
+    @Column(columnDefinition = "BIGINT DEFAULT 0")
+    private BigInteger deposit = BigInteger.ZERO;
+
+    // 💵 Số tiền thực tế được hoàn lại (deposit - fine)
+    @Column(columnDefinition = "BIGINT DEFAULT 0")
+    private BigInteger refundAmount = BigInteger.ZERO;
+
+    // ✅ Đánh dấu đã hoàn cọc hay chưa
+    private Boolean depositRefunded = false;
+
+    @Enumerated(EnumType.STRING)
+    private BorrowStatus status;
+
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Instant createdAt;
@@ -100,6 +116,22 @@ public class BorrowTransaction {
             // Nếu không phải đơn BORROW thì không có tiền phạt
             this.fine = BigInteger.ZERO;
         }
+    }
+
+    // 🔹 Tính tiền hoàn cọc
+    public void calculateRefund() {
+        if (this.deposit == null) this.deposit = BigInteger.ZERO;
+        if (this.returnDate == null) {
+            this.refundAmount = BigInteger.ZERO;
+            this.depositRefunded = false;
+            return;
+        }
+
+        BigInteger refund = this.deposit.subtract(this.fine);
+        if (refund.compareTo(BigInteger.ZERO) < 0) refund = BigInteger.ZERO;
+
+        this.refundAmount = refund;
+        this.depositRefunded = true;
     }
 
     public void calculateTotalToPay() {

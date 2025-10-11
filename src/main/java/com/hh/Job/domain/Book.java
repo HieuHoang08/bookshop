@@ -51,9 +51,12 @@ public class Book {
     @Column(nullable = false)
     private Integer quantity;
 
+    @Min(value = 0, message = "Tồn kho không được âm")
+    @Column(nullable = false)
+    private Integer stock;
+
     @Enumerated(EnumType.STRING)
     private BookStatus status;
-
 
     // Thông tin hệ thống
     @Column(nullable = false, updatable = false)

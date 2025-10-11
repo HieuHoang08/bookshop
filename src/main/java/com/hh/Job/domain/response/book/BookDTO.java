@@ -23,6 +23,7 @@ public class BookDTO {
     private Long discountPrice;
     private Integer quantity;
     private BookStatus status;
+    private Integer stock;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;

@@ -4,6 +4,7 @@ package com.hh.Job.controller;
 import com.hh.Job.domain.BorrowTransaction;
 import com.hh.Job.domain.Order;
 import com.hh.Job.domain.Publisher;
+import com.hh.Job.domain.response.RestResponse;
 import com.hh.Job.domain.response.ResultPaginationDTO;
 import com.hh.Job.domain.response.borrow.BorrowOrderDTO;
 import com.hh.Job.domain.response.borrow.ResBorrowDTO;
@@ -83,4 +84,39 @@ public class BorrowTransactionController {
         ResultPaginationDTO result = borrowTransactionService.fetchAllTransactions(spec,pageable);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
+    @GetMapping("/borrows/user/{userId}")
+    @APImessage("fetch borrow history by userId")
+    public ResponseEntity<ResultPaginationDTO> fetchBorrowByUserId(
+            @PathVariable("userId") Long userId,
+            Pageable pageable
+    ) {
+        ResultPaginationDTO result = borrowTransactionService.fetchBorrowByUserId(userId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @GetMapping("/borrows/overdue")
+    @APImessage("fetch overdue borrows")
+    public ResponseEntity<ResultPaginationDTO> fetchOverdueBorrows(Pageable pageable) {
+        ResultPaginationDTO result = borrowTransactionService.fetchOverdueBorrows(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @PutMapping("/borrows/return/{id}")
+    @APImessage("Return borrowed book")
+    public ResponseEntity<RestResponse<ResBorrowDTO>> returnBorrow(
+            @PathVariable("id") Long id,
+            @RequestBody(required = false) BorrowTransaction request
+    ) throws IdInvalidException {
+        ResBorrowDTO updatedBorrow = borrowTransactionService.returnBorrow(id, request);
+
+        RestResponse<ResBorrowDTO> response = new RestResponse<>();
+        response.setStatusCode(200);
+        response.setError(null);
+        response.setMessage("Book returned successfully");
+        response.setData(updatedBorrow);
+
+        return ResponseEntity.ok(response);
+    }
+
 }

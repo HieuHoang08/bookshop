@@ -5,6 +5,7 @@ import com.hh.Job.domain.Author;
 import com.hh.Job.domain.Book;
 import com.hh.Job.domain.Category;
 import com.hh.Job.domain.Publisher;
+import com.hh.Job.domain.constant.BookStatus;
 import com.hh.Job.domain.response.ResultPaginationDTO;
 import com.hh.Job.domain.response.book.BookDTO;
 import com.hh.Job.repository.AuthorRepository;
@@ -43,7 +44,8 @@ public class BookService {
     }
 
     public BookDTO createBook(Book book) {
-        if (book.getAuthors() != null) {
+        // 🧩 Map authors
+        if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
             List<Long> authorIds = book.getAuthors()
                     .stream().map(Author::getId)
                     .collect(Collectors.toList());
@@ -51,40 +53,56 @@ public class BookService {
             book.setAuthors(dbAuthors);
         }
 
-        // Map publisher
+        // 🏢 Map publisher
         if (book.getPublisher() != null && book.getPublisher().getId() != null) {
-            Optional<Publisher> dbPublisher = publisherRepository.findById(book.getPublisher().getId());
-            dbPublisher.ifPresent(book::setPublisher);
+            publisherRepository.findById(book.getPublisher().getId())
+                    .ifPresent(book::setPublisher);
         }
 
-        // Map categories
-        if (book.getCategories() != null) {
+        // 🏷️ Map categories
+        if (book.getCategories() != null && !book.getCategories().isEmpty()) {
             List<Long> categoryIds = book.getCategories()
                     .stream().map(Category::getId)
                     .collect(Collectors.toList());
             List<Category> dbCategories = categoryRepository.findAllById(categoryIds);
             book.setCategories(dbCategories);
         }
+
+        // ⚙️ Thiết lập mặc định
+        if (book.getStatus() == null) {
+            book.setStatus(BookStatus.AVAILABLE); // hoặc BookStatus.ACTIVE nếu bạn có enum này
+        }
+
+        // ✅ Gán stock = quantity khi tạo mới
+        if (book.getStock() == null || book.getStock() == 0) {
+            book.setStock(book.getQuantity());
+        }
+
+        // 💾 Lưu sách
         Book savedBook = bookRepository.save(book);
 
-        BookDTO savedBookDTO = new BookDTO();
-        savedBookDTO.setId(savedBook.getId());
-        savedBookDTO.setTitle(savedBook.getTitle());
-        savedBookDTO.setIsbn(savedBook.getIsbn());
-        savedBookDTO.setPublisher(savedBook.getPublisher().getName());
-        savedBookDTO.setDescription(savedBook.getDescription());
-        savedBookDTO.setPrice(savedBook.getPrice());
-        savedBookDTO.setDiscountPrice(savedBook.getDiscountPrice());
-        savedBookDTO.setQuantity(savedBook.getQuantity());
-        savedBookDTO.setQuantity(savedBook.getQuantity());
-        savedBookDTO.setStatus(savedBook.getStatus());
-        savedBookDTO.setCreatedAt(savedBook.getCreatedAt());
-        savedBookDTO.setUpdatedAt(savedBook.getUpdatedAt());
-        savedBookDTO.setCreatedBy(savedBook.getCreatedBy());
-        savedBookDTO.setUpdatedBy(savedBook.getUpdatedBy());
-        return savedBookDTO;
+        // 🧭 Map sang DTO trả về
+        BookDTO dto = new BookDTO();
+        dto.setId(savedBook.getId());
+        dto.setTitle(savedBook.getTitle());
+        dto.setIsbn(savedBook.getIsbn());
+        dto.setDescription(savedBook.getDescription());
+        dto.setPrice(savedBook.getPrice());
+        dto.setDiscountPrice(savedBook.getDiscountPrice());
+        dto.setQuantity(savedBook.getQuantity());
+        dto.setStock(savedBook.getStock());
+        dto.setStatus(savedBook.getStatus());
+        dto.setCreatedAt(savedBook.getCreatedAt());
+        dto.setUpdatedAt(savedBook.getUpdatedAt());
+        dto.setCreatedBy(savedBook.getCreatedBy());
+        dto.setUpdatedBy(savedBook.getUpdatedBy());
 
+        // 🏢 Publisher name (nếu có)
+        dto.setPublisher(savedBook.getPublisher() != null ? savedBook.getPublisher().getName() : null);
+
+        return dto;
     }
+
 
     public Optional<Book> fetchBookById(Long id) {
 
@@ -102,6 +120,7 @@ public class BookService {
         dto.setDiscountPrice(book.getDiscountPrice());
         dto.setQuantity(book.getQuantity());
         dto.setStatus(book.getStatus());
+        dto.setStock(book.getStock());
         dto.setCreatedAt(book.getCreatedAt());
         dto.setUpdatedAt(book.getUpdatedAt());
         dto.setCreatedBy(book.getCreatedBy());
@@ -131,19 +150,33 @@ public class BookService {
     }
 
     public BookDTO updateBook(Book book) {
+        // 🔍 Kiểm tra tồn tại
+        Book existing = bookRepository.findById(book.getId())
+                .orElseThrow(() -> new RuntimeException("Book not found with id: " + book.getId()));
+
+        // Cập nhật các trường cơ bản
+        existing.setTitle(book.getTitle());
+        existing.setIsbn(book.getIsbn());
+        existing.setPublishYear(book.getPublishYear());
+        existing.setDescription(book.getDescription());
+        existing.setPrice(book.getPrice());
+        existing.setDiscountPrice(book.getDiscountPrice());
+        existing.setQuantity(book.getQuantity());
+        existing.setStock(book.getStock());
+        existing.setStatus(book.getStatus());
+
         // Map Authors nếu có
         if (book.getAuthors() != null) {
             List<Long> authorIds = book.getAuthors()
                     .stream().map(Author::getId)
                     .collect(Collectors.toList());
-            List<Author> dbAuthors = authorRepository.findAllById(authorIds);
-            book.setAuthors(dbAuthors);
+            existing.setAuthors(authorRepository.findAllById(authorIds));
         }
 
         // Map Publisher nếu có
         if (book.getPublisher() != null && book.getPublisher().getId() != null) {
             publisherRepository.findById(book.getPublisher().getId())
-                    .ifPresent(book::setPublisher);
+                    .ifPresent(existing::setPublisher);
         }
 
         // Map Categories nếu có
@@ -151,52 +184,35 @@ public class BookService {
             List<Long> categoryIds = book.getCategories()
                     .stream().map(Category::getId)
                     .collect(Collectors.toList());
-            List<Category> dbCategories = categoryRepository.findAllById(categoryIds);
-            book.setCategories(dbCategories);
+            existing.setCategories(categoryRepository.findAllById(categoryIds));
         }
 
-        // Save Book
-        Book currentBook = bookRepository.save(book);
+        // ✅ Save lại
+        Book updated = bookRepository.save(existing);
 
-        // Build DTO
+        // Convert to DTO
         BookDTO dto = new BookDTO();
-        dto.setId(currentBook.getId());
-        dto.setTitle(currentBook.getTitle());
-        dto.setIsbn(currentBook.getIsbn());
-        dto.setPublishYear(currentBook.getPublishYear());
-        dto.setDescription(currentBook.getDescription());
-        dto.setPrice(currentBook.getPrice());
-        dto.setDiscountPrice(currentBook.getDiscountPrice());
-        dto.setQuantity(currentBook.getQuantity());
-        dto.setStatus(currentBook.getStatus());
-        dto.setCreatedAt(currentBook.getCreatedAt());
-        dto.setUpdatedAt(currentBook.getUpdatedAt());
-        dto.setCreatedBy(currentBook.getCreatedBy());
-        dto.setUpdatedBy(currentBook.getUpdatedBy());
-
-        // Authors
-        if (currentBook.getAuthors() != null) {
-            List<String> authors = currentBook.getAuthors()
-                    .stream().map(Author::getName)
-                    .collect(Collectors.toList());
-            dto.setAuthors(authors);
-        }
-
-        // Publisher
-        if (currentBook.getPublisher() != null) {
-            dto.setPublisher(currentBook.getPublisher().getName());
-        }
-
-        // Categories
-        if (currentBook.getCategories() != null) {
-            List<String> categories = currentBook.getCategories()
-                    .stream().map(Category::getName)
-                    .collect(Collectors.toList());
-            dto.setCategories(categories);
-        }
+        dto.setId(updated.getId());
+        dto.setTitle(updated.getTitle());
+        dto.setIsbn(updated.getIsbn());
+        dto.setPublishYear(updated.getPublishYear());
+        dto.setDescription(updated.getDescription());
+        dto.setPrice(updated.getPrice());
+        dto.setDiscountPrice(updated.getDiscountPrice());
+        dto.setQuantity(updated.getQuantity());
+        dto.setStock(updated.getStock());
+        dto.setStatus(updated.getStatus());
+        dto.setCreatedAt(updated.getCreatedAt());
+        dto.setUpdatedAt(updated.getUpdatedAt());
+        dto.setCreatedBy(updated.getCreatedBy());
+        dto.setUpdatedBy(updated.getUpdatedBy());
+        dto.setPublisher(updated.getPublisher() != null ? updated.getPublisher().getName() : null);
+        dto.setAuthors(updated.getAuthors() != null ? updated.getAuthors().stream().map(Author::getName).collect(Collectors.toList()) : null);
+        dto.setCategories(updated.getCategories() != null ? updated.getCategories().stream().map(Category::getName).collect(Collectors.toList()) : null);
 
         return dto;
     }
+
 
     public void deleteBookById(Long id) {
         bookRepository.deleteById(id);
