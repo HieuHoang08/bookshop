@@ -94,7 +94,7 @@ public class BorrowTransactionService {
         Order order = orderRepository.findById(br.getOrderId())
                 .orElseThrow(() -> new IdInvalidException("Order id not found"));
 
-        // 🟢 Kiểm tra và trừ tồn kho cho từng sách trong order
+        // Kiểm tra và trừ tồn kho cho từng sách trong order
         if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
             for (OrderDetail detail : order.getOrderDetails()) {
                 Book book = detail.getBook();
@@ -102,7 +102,7 @@ public class BorrowTransactionService {
 
                 int quantityBorrow = detail.getQuantity();
                 if (book.getStock() < quantityBorrow) {
-                    throw new IllegalStateException(
+                    throw new IdInvalidException(
                             "Sách '" + book.getTitle() + "' không đủ hàng. Còn lại: " + book.getStock()
                     );
                 }
@@ -125,7 +125,7 @@ public class BorrowTransactionService {
         transaction.setReturnDate(br.getReturnDate());
         transaction.setStatus(BorrowStatus.BORROWED);
 
-        // 💰 Đặt cọc = 20% tổng giá trị đơn hàng
+        // Đặt cọc = 20% tổng giá trị đơn hàng
         BigInteger deposit = BigInteger.valueOf(Math.round(order.getTotalPrice() * 0.2));
         transaction.setDeposit(deposit);
         transaction.setDepositRefunded(false);
@@ -133,14 +133,14 @@ public class BorrowTransactionService {
         transaction.setFine(BigInteger.ZERO);
         transaction.calculateTotalToPay();
 
-        // 🔄 Cập nhật trạng thái đơn hàng
+        // Cập nhật trạng thái đơn hàng
         order.setStatus(OrderStatus.BORROWED);
         orderRepository.save(order);
 
-        // 💾 Lưu BorrowTransaction
+        // Lưu BorrowTransaction
         BorrowTransaction saved = borrowTransactionRepository.save(transaction);
 
-        // 🧭 Map sang DTO trả về
+        // Map sang DTO trả về
         ResBorrowDTO dto = new ResBorrowDTO();
         dto.setId(saved.getId());
         dto.setBorrowDate(saved.getBorrowDate());

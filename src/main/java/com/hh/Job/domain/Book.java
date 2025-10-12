@@ -68,6 +68,12 @@ public class Book {
     private String createdBy;
     private String updatedBy;
 
+    // Voi bookDetail
+    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"book"})
+    private BookDetail bookDetail;
+
+
     // ManyToMany với Author
     @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = {"books"})

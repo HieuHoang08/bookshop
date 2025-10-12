@@ -2,6 +2,7 @@ package com.hh.Job.controller;
 
 
 import com.hh.Job.domain.Book;
+import com.hh.Job.domain.constant.BookStatus;
 import com.hh.Job.domain.response.ResultPaginationDTO;
 import com.hh.Job.domain.response.book.BookDTO;
 import com.hh.Job.repository.BookRepository;
@@ -91,7 +92,73 @@ public class BookController {
 
     @GetMapping("/books")
     @APImessage("Get all books")
-    public ResponseEntity<ResultPaginationDTO> getAllBooks(@Filter Specification<Book> specification, Pageable pageable) {
+    public ResponseEntity<ResultPaginationDTO> getAllBooks(
+            @Filter Specification<Book> specification,
+            Pageable pageable) {
         return ResponseEntity.ok().body(this.bookService.fetchAllBooks(specification, pageable));
     }
+
+    @GetMapping("/books/search/author")
+    public ResponseEntity<ResultPaginationDTO> searchByAuthor(
+            @RequestParam("name") String authorName,
+            @Filter Specification<Book> specification,
+            Pageable pageable) {
+
+        ResultPaginationDTO result = bookService.searchBooksByAuthor(authorName, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/books/search/publisher")
+    public ResponseEntity<ResultPaginationDTO> searchByPublisher(
+            @RequestParam("name") String publisherName,
+            @Filter Specification<Book> specification,
+            Pageable pageable) {
+
+        ResultPaginationDTO result = bookService.searchBooksByPublisher(publisherName, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/books/search/category")
+    public ResponseEntity<ResultPaginationDTO> searchByCategory(
+            @RequestParam("name") String categoryName,
+            @Filter Specification<Book> specification,
+            Pageable pageable) {
+
+        ResultPaginationDTO result = bookService.searchBooksByCategory(categoryName, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/books/search")
+    public ResponseEntity<ResultPaginationDTO> searchBooks(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long authorId,
+            @RequestParam(required = false) Long publisherId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) BookStatus status,
+            @Filter Specification<Book> specification,
+            Pageable pageable) {
+
+        ResultPaginationDTO result =
+                bookService.searchBooks(keyword, authorId, publisherId, categoryId, status, pageable);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // tim kiem theo ten tac gia, the loai, nxb
+
+//    @GetMapping("/books/search")
+//    public ResponseEntity<ResultPaginationDTO> searchBooks(
+//            @RequestParam(required = false) String keyword,
+//            @RequestParam(required = false) String authorName,
+//            @RequestParam(required = false) String publisherName,
+//            @RequestParam(required = false) String categoryName,
+//            @RequestParam(required = false) BookStatus status,
+//            @Filter Specification<Book> specification,
+//            Pageable pageable) {
+//
+//        ResultPaginationDTO result =
+//                bookService.searchBooks(keyword, authorName, publisherName, categoryName, status, pageable);
+//
+//        return ResponseEntity.ok(result);
+//    }
 }

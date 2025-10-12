@@ -33,7 +33,7 @@ public class OrderController {
     public ResponseEntity<ResOrderDTO> createOrder(@RequestBody ReqOrderDTO reqOrderDTO)
             throws IdInvalidException {
         Order savedOrder = orderService.createOrder(reqOrderDTO);
-        ResOrderDTO resOrderDTO = orderService.toResOrderDTO(savedOrder); // ✅ SỬA: OrderService -> orderService
+        ResOrderDTO resOrderDTO = orderService.toResOrderDTO(savedOrder);
         return ResponseEntity.ok(resOrderDTO);
     }
 
