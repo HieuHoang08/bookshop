@@ -1,23 +1,19 @@
 package com.hh.Job.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.hh.Job.domain.constant.CartEnum;
-import com.hh.Job.domain.constant.CartType;
 import com.hh.Job.util.SecurityUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.List;
 
 @Entity
-@Table(name = "carts")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "cart_details")
 @Getter
 @Setter
-
-public class Cart {
+public class CartDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,13 +21,15 @@ public class Cart {
 
     private int quantity;
 
-    @Enumerated(EnumType.STRING)
-    private CartEnum status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id", nullable = false)
+    @JsonIgnore
+    private Cart cart;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CartType cartType;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    @JsonIgnoreProperties({"carts", "authors", "categories", "publisher"})
+    private Book book;
 
     private Instant createdAt;
 
@@ -40,20 +38,6 @@ public class Cart {
     private String createdBy;
 
     private String updatedBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnoreProperties("carts")
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
-    @JsonIgnoreProperties({"carts", "authors", "categories", "publisher"})
-    private Book book;
-
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties("cart")
-    private List<CartDetail> cartDetails ;
 
     @PrePersist
     public void handleBeforeCreate () {

@@ -15,6 +15,11 @@ public class ReqOrderDTO {
     private String address; // ✅ Thêm địa chỉ
     private String note;    // ✅ Thêm ghi chú
 
+    // 🟢 Thêm dòng này — mã voucher do user nhập
+    private String voucherCode;
+
+    // 🟢 Danh sách chi tiết đơn hàng
+    private List<OrderDetailRequest> orderDetailss;
     @Getter
     @Setter
     public static class OrderDetailRequest {

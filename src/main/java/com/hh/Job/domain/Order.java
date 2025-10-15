@@ -36,6 +36,9 @@ public class Order {
     @Column(name = "total_price")
     private Double totalPrice;
 
+    @Column(name = "discount_amount")
+    private Double discountAmount;
+
     private Instant createdAt;
 
     private Instant updatedAt;
@@ -56,6 +59,10 @@ public class Order {
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("order")
     private List<BorrowTransaction> borrowTransactions;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher; // FK → Voucher(id)
 
     @PrePersist
     public void handleBeforeCreate () {

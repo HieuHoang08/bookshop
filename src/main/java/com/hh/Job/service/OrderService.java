@@ -3,15 +3,13 @@ package com.hh.Job.service;
 
 import com.hh.Job.domain.*;
 import com.hh.Job.domain.constant.CartType;
+import com.hh.Job.domain.constant.DiscountType;
 import com.hh.Job.domain.constant.OrderStatus;
 import com.hh.Job.domain.request.ReqOrderDTO;
 import com.hh.Job.domain.request.ReqUpdateOrderDTO;
 import com.hh.Job.domain.response.ResultPaginationDTO;
 import com.hh.Job.domain.response.order.ResOrderDTO;
-import com.hh.Job.repository.BookRepository;
-import com.hh.Job.repository.OrderDetailRepository;
-import com.hh.Job.repository.OrderRepository;
-import com.hh.Job.repository.UserRepository;
+import com.hh.Job.repository.*;
 import com.hh.Job.util.SecurityUtil;
 import com.hh.Job.util.error.IdInvalidException;
 import jakarta.persistence.criteria.Predicate;
@@ -33,14 +31,21 @@ public class OrderService {
     private final OrderDetailRepository orderDetailRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
+    private final VoucherRepository voucherRepository;
+    private final VoucherUserRepository voucherUserRepository;
+
     public OrderService(OrderRepository orderRepository,
                         OrderDetailRepository orderDeatailRepository,
                         UserRepository userRepository,
-                        BookRepository bookRepository) {
+                        BookRepository bookRepository,
+                        VoucherRepository voucherRepository,
+                        VoucherUserRepository voucherUserRepository) {
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDeatailRepository;
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
+        this.voucherRepository = voucherRepository;
+        this.voucherUserRepository = voucherUserRepository;
     }
 
     // Converter để chuyển đổi giữa Entity và DTO
@@ -174,11 +179,70 @@ public class OrderService {
             }
         }
 
-        // 4️⃣ Gán chi tiết và tổng tiền
+        // 4️⃣ Gán chi tiết và tổng tiền ban đầu
         order.setOrderDetails(orderDetails);
         order.setTotalPrice(totalPrice);
+        order.setDiscountAmount(0.0); // default
 
-        // 5️⃣ Lưu order
+        // 5️⃣ Áp dụng voucher nếu có
+        if (reqOrderDTO.getVoucherCode() != null && !reqOrderDTO.getVoucherCode().isEmpty()) {
+            Voucher voucher = voucherRepository.findByCodeIgnoreCase(reqOrderDTO.getVoucherCode())
+                    .orElseThrow(() -> new IdInvalidException("Mã voucher không hợp lệ"));
+
+            // 🔹 Kiểm tra trạng thái
+            if (!Boolean.TRUE.equals(voucher.getIsActive())) {
+                throw new IdInvalidException("Voucher này đã bị vô hiệu hóa");
+            }
+
+            // 🔹 Kiểm tra hạn sử dụng
+            if (voucher.getEndDate() != null && voucher.getEndDate().isBefore(Instant.now())) {
+                throw new IdInvalidException("Voucher đã hết hạn sử dụng");
+            }
+
+            // 🔹 Kiểm tra số lượng còn lại
+            if (voucher.getQuantity() != null && voucher.getQuantity() <= 0) {
+                throw new IdInvalidException("Voucher đã hết lượt sử dụng");
+            }
+
+            // 🔹 Kiểm tra giá trị tối thiểu
+            if (voucher.getMinOrderAmount() != null && totalPrice < voucher.getMinOrderAmount()) {
+                throw new IdInvalidException("Đơn hàng không đủ điều kiện để sử dụng voucher này");
+            }
+
+            // 🔹 Tính giảm giá
+            double discount = 0.0;
+            if (voucher.getDiscountType() == DiscountType.PERCENT) {
+                discount = totalPrice * (voucher.getDiscountValue() / 100.0);
+                if (voucher.getMaxDiscountAmount() != null && discount > voucher.getMaxDiscountAmount()) {
+                    discount = voucher.getMaxDiscountAmount();
+                }
+            } else if (voucher.getDiscountType() == DiscountType.AMOUNT) {
+                discount = voucher.getDiscountValue();
+            }
+
+            double finalTotal = Math.max(totalPrice - discount, 0);
+
+            // 🔹 Gán thông tin vào order
+            order.setVoucher(voucher);
+            order.setDiscountAmount(discount);
+            order.setTotalPrice(finalTotal);
+
+            // 🔹 Giảm số lượng voucher còn lại
+            if (voucher.getQuantity() != null) {
+                voucher.setQuantity(voucher.getQuantity() - 1);
+            }
+            voucherRepository.save(voucher);
+
+            // 🔹 Lưu lịch sử sử dụng voucher
+            VoucherUser voucherUser = new VoucherUser();
+            voucherUser.setVoucher(voucher);
+            voucherUser.setUser(user);
+            voucherUser.setOrder(order);
+            voucherUser.setUsedAt(Instant.now());
+            voucherUserRepository.save(voucherUser);
+        }
+
+        // 6️⃣ Lưu order
         return orderRepository.save(order);
     }
 

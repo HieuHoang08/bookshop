@@ -4,6 +4,8 @@ import com.hh.Job.domain.Cart;
 import com.hh.Job.domain.request.ReqUpdateCartDTO;
 import com.hh.Job.domain.response.RestResponse;
 import com.hh.Job.domain.response.ResultPaginationDTO;
+import com.hh.Job.domain.response.cart.CartDTO;
+import com.hh.Job.domain.response.cart.ResCreateCart;
 import com.hh.Job.domain.response.cart.ResUpdateCartDTO;
 import com.hh.Job.service.CartService;
 import com.hh.Job.util.annotation.APImessage;
@@ -28,24 +30,23 @@ public class CartController {
     }
 
     @PostMapping("/carts")
-    @APImessage("create a carts")
-    public ResponseEntity<RestResponse<Cart>> createCart(@RequestBody Cart cart)
-    throws IdInvalidException {
-        Cart createdCart = cartService.handleCreateCart(cart);
+    @APImessage("create a cart")
+    public ResponseEntity<RestResponse<CartDTO>> createCart(@RequestBody ResCreateCart request) {
+        CartDTO cartDto = cartService.createCart(request);
 
-        RestResponse<Cart> restResponse = new RestResponse<>(
+        RestResponse<CartDTO> response = new RestResponse<>(
                 HttpStatus.OK.value(),
                 null,
-                "create a carts",
-                createdCart
+                "Cart created successfully",
+                cartDto
         );
 
-        return ResponseEntity.ok(restResponse);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/carts/{id}")
     @APImessage("fetch cart byId")
-    public ResponseEntity<Cart> getCartById(@PathVariable("id") Long id)
+    public ResponseEntity<CartDTO> getCartById(@PathVariable("id") Long id)
             throws IdInvalidException {
 
         Optional<Cart> optionalCart = cartService.handleGetCart(id);
@@ -55,8 +56,11 @@ public class CartController {
             throw new IdInvalidException("Cart với ID " + id + " không tìm thấy");
         }
 
+
+        CartDTO cartDto = cartService.toCartDto(optionalCart.get());
+
         // Nếu tìm thấy => trả về dữ liệu
-        return ResponseEntity.ok(optionalCart.get());
+        return ResponseEntity.ok(cartDto);
     }
 
     @PutMapping("/carts/{id}")

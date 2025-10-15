@@ -2,6 +2,7 @@ package com.hh.Job.domain;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hh.Job.util.SecurityUtil;
 import com.hh.Job.domain.constant.GenderEnum;
@@ -51,6 +52,11 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = "user")
     private List<Order> orders;
+
+    // Quan hệ ngược lại với VoucherUser
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<VoucherUser> voucherUsers;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GTM+7")
     private Instant createdAt;
